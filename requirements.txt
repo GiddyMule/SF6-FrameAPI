@@ -1,0 +1,25 @@
+# Web framework
+fastapi
+
+# ASGI server
+uvicorn[standard]
+
+# MongoDB driver
+pymongo
+
+# Environment variables
+python-dotenv
+
+# Data validation / typing
+pydantic
+
+# HTTP & scraping dependencies (used by sf6fd)
+requests
+beautifulsoup4
+lxml
+
+# Scheduling (optional but recommended)
+apscheduler
+
+# Testing (optional, but good practice)
+pytest
