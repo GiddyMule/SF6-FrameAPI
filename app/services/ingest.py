@@ -3,6 +3,10 @@ from app.db import db
 
 characters = db["characters"]
 
+PATCH_VERSION = "1.10"   # change when SF6 patches
+DATA_SOURCE = "sf6fd"
+
+
 def normalize_move(move: dict) -> dict:
     return {
         "name": move.get("name"),
@@ -16,21 +20,27 @@ def normalize_move(move: dict) -> dict:
         }
     }
 
+
 def ingest_character(character: dict):
     name = character.get("name") or character.get("character")
     raw_moves = character.get("moves", [])
 
-    document = {
-        "name": name,
-        "moves": [normalize_move(m) for m in raw_moves],  # will be empty for stub
-        "last_updated": datetime.utcnow()
+    version = {
+        "patch": PATCH_VERSION,
+        "scraped_at": datetime.utcnow(),
+        "source": DATA_SOURCE,
+        "moves": [normalize_move(m) for m in raw_moves],
     }
 
     characters.update_one(
         {"name": name},
-        {"$set": document},
+        {
+            "$setOnInsert": {"name": name},
+            "$push": {"versions": version}
+        },
         upsert=True
     )
+
 
 def ingest_all():
     from sf6fd.scrape import scrape

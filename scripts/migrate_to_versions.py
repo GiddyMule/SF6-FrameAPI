@@ -1,0 +1,30 @@
+import sys
+from pathlib import Path
+from datetime import datetime
+
+# Ensure project root is on sys.path when running directly from scripts/
+ROOT_DIR = Path(__file__).resolve().parents[1]
+if str(ROOT_DIR) not in sys.path:
+    sys.path.insert(0, str(ROOT_DIR))
+
+from app.db import db
+
+characters = db["characters"]
+
+for doc in characters.find({"moves": {"$exists": True}}):
+    version = {
+        "patch": "legacy",
+        "scraped_at": datetime.utcnow(),
+        "source": "legacy_import",
+        "moves": doc["moves"],
+    }
+
+    characters.update_one(
+        {"_id": doc["_id"]},
+        {
+            "$unset": {"moves": ""},
+            "$set": {"versions": [version]}
+        }
+    )
+
+print("Migration complete")
